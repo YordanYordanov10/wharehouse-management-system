@@ -4,6 +4,8 @@ import com.yordanov.warehouse.Web.Dto.ProductResponse;
 import lombok.experimental.UtilityClass;
 import com.yordanov.warehouse.Product.Model.Product;
 
+import java.util.List;
+
 @UtilityClass
 public class DtoMapper {
 
@@ -16,6 +18,10 @@ public class DtoMapper {
                 .sku(product.getSku())
                 .description(product.getDescription())
                 .build();
+    }
+
+    public static List<ProductResponse> toProductResponseList(List<Product> products) {
+        return products.stream().map(DtoMapper::toProductResponse).toList();
     }
 
 }
