@@ -5,6 +5,7 @@ import com.yordanov.warehouse.Product.Service.ProductService;
 import com.yordanov.warehouse.Web.Dto.ProductRequest;
 import com.yordanov.warehouse.Web.Dto.ProductResponse;
 import com.yordanov.warehouse.Web.Mapper.DtoMapper;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class ProductController {
     }
 
     @PostMapping("/product")
-    ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest){
+    ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest){
 
         Product product = productService.addProduct(productRequest);
         ProductResponse productResponse = DtoMapper.toProductResponse(product);

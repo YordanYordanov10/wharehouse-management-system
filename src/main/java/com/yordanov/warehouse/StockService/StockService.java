@@ -55,6 +55,7 @@ public class StockService {
                     .product(product)
                     .warehouse(warehouse)
                     .quantity(receiveStockRequest.getQuantity())
+                    .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
 

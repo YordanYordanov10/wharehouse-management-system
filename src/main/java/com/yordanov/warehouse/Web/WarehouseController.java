@@ -5,6 +5,7 @@ import com.yordanov.warehouse.Warehouse.Service.WarehouseService;
 import com.yordanov.warehouse.Web.Dto.WarehouseRequest;
 import com.yordanov.warehouse.Web.Dto.WarehouseResponse;
 import com.yordanov.warehouse.Web.Mapper.DtoMapper;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class WarehouseController {
     }
 
     @PostMapping("/warehouses")
-    public ResponseEntity<WarehouseResponse> createWarehouse(@RequestBody WarehouseRequest warehouseRequest) {
+    public ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody WarehouseRequest warehouseRequest) {
 
         Warehouse warehouse = warehouseService.createWarehouse(warehouseRequest);
         WarehouseResponse warehouseResponse = DtoMapper.toWarehouseResponse(warehouse);
@@ -48,7 +49,7 @@ public class WarehouseController {
     }
 
     @PutMapping("/warehouses/{id}")
-    public ResponseEntity<WarehouseResponse> updateWarehouse(@PathVariable UUID id, @RequestBody WarehouseRequest warehouseRequest) {
+    public ResponseEntity<WarehouseResponse> updateWarehouse(@PathVariable UUID id, @Valid @RequestBody WarehouseRequest warehouseRequest) {
 
         Warehouse warehouse = warehouseService.updateWarehouse(warehouseRequest,id);
         WarehouseResponse warehouseResponse = DtoMapper.toWarehouseResponse(warehouse);
@@ -56,7 +57,7 @@ public class WarehouseController {
     }
 
     @PatchMapping("/warehouses/{id}")
-    public ResponseEntity<WarehouseResponse> changeStatusWarehouse(@PathVariable UUID id, @RequestBody WarehouseRequest warehouseRequest) {
+    public ResponseEntity<WarehouseResponse> changeStatusWarehouse(@PathVariable UUID id,@Valid @RequestBody WarehouseRequest warehouseRequest) {
 
         Warehouse warehouse = warehouseService.changeStatusWarehouse(id,warehouseRequest.getStatus());
         WarehouseResponse warehouseResponse = DtoMapper.toWarehouseResponse(warehouse);

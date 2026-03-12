@@ -1,7 +1,8 @@
 package com.yordanov.warehouse.Web.Dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.UUID;
@@ -9,14 +10,13 @@ import java.util.UUID;
 @Data
 public class ReceiveStockRequest {
 
-    @NotBlank
+    @NotNull
     private UUID productId;
 
-    @NotBlank
+    @NotNull
     private UUID warehouseId;
 
-    @NotBlank
-    @Positive(message = "Price must be positive number")
+    @Min(value = 1, message = "Quantity must be greater than 0")
     private int quantity;
 
     @NotBlank
