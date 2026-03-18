@@ -3,10 +3,7 @@ package com.yordanov.warehouse.Web;
 import com.yordanov.warehouse.Inventory.Service.InventoryService;
 import com.yordanov.warehouse.InventoryMovement.Model.InventoryMovement;
 import com.yordanov.warehouse.StockService.StockService;
-import com.yordanov.warehouse.Web.Dto.ReceiveStockRequest;
-import com.yordanov.warehouse.Web.Dto.ReceiveStockResponse;
-import com.yordanov.warehouse.Web.Dto.ReserveStockRequest;
-import com.yordanov.warehouse.Web.Dto.ReserveStockResponse;
+import com.yordanov.warehouse.Web.Dto.*;
 import com.yordanov.warehouse.Web.Mapper.DtoMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -35,9 +32,17 @@ public class StockServiceController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PostMapping("/reserve")
     public ResponseEntity<ReserveStockResponse> reserveStock(@Valid @RequestBody ReserveStockRequest request) {
 
         ReserveStockResponse response = stockService.reserveStock(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/release")
+    public ResponseEntity<ReleaseStockResponse> releaseStock(@Valid @RequestBody ReleaseStockRequest request) {
+
+        ReleaseStockResponse response = stockService.releaseStock(request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

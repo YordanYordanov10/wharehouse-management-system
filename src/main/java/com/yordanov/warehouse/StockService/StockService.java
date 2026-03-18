@@ -12,10 +12,7 @@ import com.yordanov.warehouse.Product.Model.Product;
 import com.yordanov.warehouse.Product.Repository.ProductRepository;
 import com.yordanov.warehouse.Warehouse.Model.Warehouse;
 import com.yordanov.warehouse.Warehouse.Repository.WarehouseRepository;
-import com.yordanov.warehouse.Web.Dto.ReceiveStockRequest;
-import com.yordanov.warehouse.Web.Dto.ReceiveStockResponse;
-import com.yordanov.warehouse.Web.Dto.ReserveStockRequest;
-import com.yordanov.warehouse.Web.Dto.ReserveStockResponse;
+import com.yordanov.warehouse.Web.Dto.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -91,12 +88,7 @@ public class StockService {
     @Transactional
     public ReserveStockResponse reserveStock(ReserveStockRequest reserveStockRequest) {
 
-        Product product = productRepository.findById(reserveStockRequest.getProductId()).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        Warehouse warehouse = warehouseRepository.findById(reserveStockRequest.getWarehouseId()).orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
-
-        Inventory inventory = inventoryRepository.findByWarehouseIdAndProductId(warehouse.getId(), product.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No such Inventory with productId %s and warehouseId %s"
-                        .formatted(reserveStockRequest.getProductId(), reserveStockRequest.getWarehouseId())));
+        Inventory inventory = findInventoryByWarehouseIdAndProductId(reserveStockRequest.getWarehouseId(),reserveStockRequest.getProductId());
 
         int availableQuantity = inventory.getAvailableQuantity();
 
@@ -110,8 +102,8 @@ public class StockService {
             inventoryRepository.save(inventory);
 
             InventoryMovement inventoryMovement = InventoryMovement.builder()
-                    .product(product)
-                    .warehouse(warehouse)
+                    .product(inventory.getProduct())
+                    .warehouse(inventory.getWarehouse())
                     .quantity(reserveStockRequest.getQuantity())
                     .reference(reserveStockRequest.getReference())
                     .referenceType(reserveStockRequest.getReferenceType())
@@ -123,8 +115,8 @@ public class StockService {
 
         return ReserveStockResponse.builder()
                 .movementId(inventoryMovement.getId())
-                .productId(product.getId())
-                .warehouseId(warehouse.getId())
+                .productId(inventory.getProduct().getId())
+                .warehouseId(inventory.getWarehouse().getId())
                 .reserveQuantity(reserveStockRequest.getQuantity())
                 .availableQuantity(availableQuantity - reserveStockRequest.getQuantity())
                 .reference(reserveStockRequest.getReference())
@@ -132,5 +124,50 @@ public class StockService {
                 .reserveAt(now)
                 .build();
 
+    }
+
+    @Transactional
+    public ReleaseStockResponse releaseStock(ReleaseStockRequest releaseStockRequest){
+
+        Inventory inventory = findInventoryByWarehouseIdAndProductId(releaseStockRequest.getWarehouseId(),releaseStockRequest.getProductId());
+
+        if(inventory.getReservedQuantity() < releaseStockRequest.getQuantity()){
+            throw new ConflictException("Not enough stock to release");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        inventory.setReservedQuantity(inventory.getReservedQuantity() - releaseStockRequest.getQuantity());
+        inventory.setUpdatedAt(now);
+        inventoryRepository.save(inventory);
+
+        InventoryMovement inventoryMovement = InventoryMovement.builder()
+                .product(inventory.getProduct())
+                .warehouse(inventory.getWarehouse())
+                .quantity(releaseStockRequest.getQuantity())
+                .reference(releaseStockRequest.getReference())
+                .referenceType(releaseStockRequest.getReferenceType())
+                .movementType(MovementType.RELEASE)
+                .createdAt(now)
+                .build();
+
+        inventoryMovementRepository.save(inventoryMovement);
+
+        return ReleaseStockResponse.builder()
+                .productId(inventory.getProduct().getId())
+                .warehouseId(inventory.getWarehouse().getId())
+                .movementId(inventoryMovement.getId())
+                .releaseQuantity(releaseStockRequest.getQuantity())
+                .reference(releaseStockRequest.getReference())
+                .referenceType(releaseStockRequest.getReferenceType())
+                .releaseAt(now)
+                .build();
+    }
+
+    public Inventory findInventoryByWarehouseIdAndProductId(UUID warehouseId,UUID productId){
+
+        return  inventoryRepository.findByWarehouseIdAndProductId(warehouseId,productId)
+                .orElseThrow(() -> new ResourceNotFoundException("No such Inventory with productId %s and warehouseId %s"
+                        .formatted(productId,warehouseId)));
     }
 }
